@@ -1,3 +1,23 @@
+# Renderer NAPI Leak
+
+This is repository to demonstrate resources create with NAPI not being garbage collected when run via a renderer process.
+
+There are a few lines of code in `renderer.js` that get a buffer that's created in C and then do nothing with it. The C code should receive a callback when the JS buffer gets garbage collected, this never happens and therefore the data backing the buffer can never be cleared. The code will keep running until the OS freezes.
+
+However when you move that same code to `main.js` it behaves as you'd expected, the callback in C is called regularly and the code is able to clear the memory backing the buffer.
+
+Here is the [NAPI documentation for creating an external buffer](https://nodejs.org/docs/latest-v12.x/api/n-api.html#n_api_napi_create_external_buffer). Pay particular attention the `finalize_cb` parameter.
+
+To use:
+```
+npm install
+npm run build
+npm start
+```
+
+This will quickly cause the OS to run out of memory and grind to a halt so don't let it run for long, keep on eye on system memory usage.
+
+
 # electron-quick-start
 
 **Clone and run for a quick way to see Electron in action.**
